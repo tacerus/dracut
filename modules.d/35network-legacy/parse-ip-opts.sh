@@ -84,6 +84,7 @@ for p in $(getargs ip=); do
                 [ -n "$ip" ] \
                     && die "For argument 'ip=$p'\nSorry, setting client-ip does not make sense for '$autoopt'"
                 ;;
+            wicked-static) ;;
             *) die "For argument 'ip=$p'\nSorry, unknown value '$autoopt'" ;;
         esac
     done
@@ -112,7 +113,7 @@ for p in $(getargs ip=); do
         [ -n "$DHCPORSERVER" ] && [ -n "$srv" ] && continue
         # dhcp? (It's simpler to check for a set ip. Checks above ensure that if
         # ip is there, we're static
-        [ -z "$ip" ] && continue
+        [ -z "$ip" -o "$autoopt" = "wicked-static" ] && continue
         # Not good!
         die "Server-ip or dhcp for netboot needed, but current arguments say otherwise"
     fi

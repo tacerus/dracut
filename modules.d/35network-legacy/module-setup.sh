@@ -58,6 +58,7 @@ install() {
 
     # SUSE specific files
     for f in \
+        /etc/sysconfig/network/config \
         /etc/sysconfig/network/ifcfg-* \
         /etc/sysconfig/network/ifroute-* \
         /etc/sysconfig/network/routes \

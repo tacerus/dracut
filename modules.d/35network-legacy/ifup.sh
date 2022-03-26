@@ -295,6 +295,52 @@ do_ipv6link() {
     return "$ret"
 }
 
+# Prepare static IP configuration based on wicked ifcfg
+do_wicked_static() {
+    if [ -e /etc/sysconfig/network/ifcfg-${netif} ] ; then
+        # Pull in existing interface configuration
+        . /etc/sysconfig/network/ifcfg-${netif}
+
+        if [ "$BOOTPROTO" = "static" ] ; then
+            autoconf=${BOOTPROTO}
+            if [ -n "$IPADDR" ] ; then
+                local cidr=${IPADDR#*/}
+                if [ "$cidr" != "$IPADDR" ] ; then
+                    mask=${cidr}
+                    ip=${IPADDR%/*}
+                elif [ -n "$PREFIXLEN" ] ; then
+                    mask=${PREFIXLEN}
+                    ip=${IPADDR}
+                fi
+                [ -n "$GATEWAY" ] && gw=${GATEWAY}
+            fi
+            if [ -z "$IPADDR" ] ; then
+                warn "Blank interface configuration for $netif!"
+                return 1
+            fi
+        else
+                warn "Non-static interface configuration for $netif!"
+                return 1
+        fi
+    fi
+
+    if [ -e /etc/sysconfig/network/config ] ; then
+        # Pull in existing configuration for name resolution
+        . /etc/sysconfig/network/config
+
+        if [ -n "$NETCONFIG_DNS_STATIC_SERVERS" ] ; then
+            for ns in "$NETCONFIG_DNS_STATIC_SERVERS" ; do
+                echo "nameserver $ns" >> /etc/resolv.conf
+            done
+        fi
+        if [ -n "$NETCONFIG_DNS_STATIC_SEARCHLIST" ] ; then
+            echo "search $NETCONFIG_DNS_STATIC_SEARCHLIST" >> /etc/resolv.conf
+        fi
+    fi
+
+    do_static
+}
+
 # Handle static ip configuration
 do_static() {
     strglobin "$ip" '*:*:*' && load_ipv6
@@ -656,6 +702,9 @@ for p in $(getargs ip=); do
                 ;;
             link6)
                 do_ipv6link
+                ;;
+            wicked-static)
+                do_wicked_static
                 ;;
             *)
                 do_static
