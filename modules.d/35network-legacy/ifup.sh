@@ -304,12 +304,16 @@ do_wicked_static() {
         if [ "$BOOTPROTO" = "static" ] ; then
             autoconf=${BOOTPROTO}
             if [ -n "$IPADDR" ] ; then
+                # respect netmask priority described in ifcfg(5)
                 local cidr=${IPADDR#*/}
                 if [ "$cidr" != "$IPADDR" ] ; then
                     mask=${cidr}
                     ip=${IPADDR%/*}
                 elif [ -n "$PREFIXLEN" ] ; then
                     mask=${PREFIXLEN}
+                    ip=${IPADDR}
+                elif [ -n "$NETMASK" ] ; then
+                    mask=${NETMASK}
                     ip=${IPADDR}
                 fi
                 [ -n "$GATEWAY" ] && gw=${GATEWAY}
