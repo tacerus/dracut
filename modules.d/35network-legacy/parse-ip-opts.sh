@@ -73,8 +73,15 @@ for p in $(getargs ip=); do
             none | off)
                 [ -z "$ip" ] \
                     && die "For argument 'ip=$p'\nValue '$autoopt' without static configuration does not make sense"
-                [ -z "$mask" ] \
-                    && die "Sorry, automatic calculation of netmask is not yet supported"
+                if [ -z "$mask" ]; then
+                    cidr=${ip#*/}
+                    if [ "$cidr" != "$ip" ]; then
+                        mask=${cidr}
+                        ip=${ip%/*}
+                    else
+                        die "Sorry, automatic calculation of netmask is not yet supported"
+                    fi
+                fi
                 ;;
             auto6 | link6) ;;
             either6) ;;
