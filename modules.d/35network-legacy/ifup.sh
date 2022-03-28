@@ -297,6 +297,9 @@ do_ipv6link() {
 
 # Prepare static IP configuration based on wicked ifcfg
 do_wicked_static() {
+    unset BOOTPROTO IPADDR PREFIXLEN NETMASK GATEWAY NETCONFIG_DNS_STATIC_SERVERS NETCONFIG_DNS_STATIC_SEARCHLIST \
+          autoconf ip mask
+
     if [ -e /etc/sysconfig/network/ifcfg-${netif} ] ; then
         # Pull in existing interface configuration
         . /etc/sysconfig/network/ifcfg-${netif}
